@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			   xmlns:s="library://ns.adobe.com/flex/spark"
+			   xmlns:mx="library://ns.adobe.com/flex/mx" creationComplete="init();" width="71" height="21">
+	
+	<fx:Script>
+		<![CDATA[ 
+			import mx.core.FlexGlobals;
+			import mx.utils.UIDUtil;
+			
+			public var filterArray:Array = new Array();
+			public var fileSelector:FileReferenceList;
+			
+			public var files:Dictionary = new Dictionary();
+			public var fileIds:Dictionary = new Dictionary();
+			
+			public var jsHandlerObject:String;
+			
+			private var loader:Loader;
+			
+			public function init():void {
+				ExternalInterface.addCallback('addFilter', addFilter);
+				ExternalInterface.addCallback('clearFilters', clearFilters);
+				ExternalInterface.addCallback('upload', upload);
+				ExternalInterface.addCallback('setHandlerObject', setHandlerObject);
+				ExternalInterface.addCallback('setBrowseButtonImage', setBrowseButtonImage);
+				
+				if(FlexGlobals.topLevelApplication.parameters.hasOwnProperty('jsHandler')) {
+					jsHandlerObject = FlexGlobals.topLevelApplication.parameters.jsHandler;
+					ExternalInterface.call(js('init'));
+				}
+			}
+			
+			public function setHandlerObject(jsHandler:String):void {
+				jsHandlerObject = jsHandler;
+			}
+			
+			public function setBrowseButtonImage(imageURL:String):void {
+				currentState = 'img';
+				
+				loader = new Loader();
+				loader.contentLoaderInfo.addEventListener(Event.COMPLETE,setBrowseButtonHandler);
+				loader.load(new URLRequest(encodeURI(imageURL)));
+			}
+			
+			public function setBrowseButtonHandler(e:Event):void {
+				imageButton.source = loader.contentLoaderInfo.content;
+				ExternalInterface.call(js('buttonSizeChangeHandler'), loader.contentLoaderInfo.width, loader.contentLoaderInfo.height);
+			}
+			
+			public function addFilter(title:String, types:String):void {
+				filterArray.push(new FileFilter(title, types));
+			}
+			
+			public function clearFilters():void {
+				filterArray = new Array();
+			}
+				
+			//var imageFilter:FileFilter = new FileFilter("Image Files (*.jpg, *.jpeg, *.gif, *.png)", "*.jpg; *.jpeg; *.gif; *.png");
+			//var textFilter:FileFilter = new FileFilter("Text Files (*.txt, *.rtf)", "*.txt; *.rtf");
+			
+			public function js(functionName:String):String {
+				return jsHandlerObject + '.' + functionName;
+			}
+			
+			public function upload(fileID:String, url:String, fileVar:String="file"):Boolean {
+				if(files.hasOwnProperty(fileID)) {
+					var file:FileReference = files[fileID];
+					ExternalInterface.call(js('fileStatusChangeHandler'), fileID, "Uploading");
+					
+					var request:URLRequest = new URLRequest(url); 
+					request.method="POST";
+					
+					file.addEventListener(ProgressEvent.PROGRESS, progressHandler);
+					file.addEventListener(DataEvent.UPLOAD_COMPLETE_DATA, completeHandler);
+					file.addEventListener(IOErrorEvent.IO_ERROR, ioErrorHandler);
+					
+					file.upload(request, fileVar);
+					
+					return true;
+				} else {
+					return false;
+				}
+			}
+			
+			public function ioErrorHandler(e:IOErrorEvent):void {
+				ExternalInterface.call(js('fileStatusChangeHandler'), fileIds[e.target], "Error!");
+			}
+			
+			public function completeHandler(e:DataEvent):void {
+				ExternalInterface.call(js('fileStatusChangeHandler'), fileIds[e.target], "Complete");
+			}
+			
+			public function progressHandler(e:ProgressEvent):void {
+				ExternalInterface.call(js('fileProgressHandler'), fileIds[e.target], Math.round(100 * e.bytesLoaded/e.bytesTotal));
+			}
+			
+			
+			public function browse(typeFilter:Array = null):void {
+				fileSelector = new FileReferenceList();
+				fileSelector.addEventListener(Event.SELECT, selectHandler);
+				fileSelector.browse(filterArray);
+			}
+			
+			public function selectHandler(event:Event):void {
+				for(var i:int=0; i<fileSelector.fileList.length; i++) {
+					var uid:String = UIDUtil.createUID();
+					files[uid] = fileSelector.fileList[i];
+					fileIds[files[uid]] = uid;
+					ExternalInterface.call(js('fileSelectedHandler'), uid, files[uid]);
+				}
+			}
+						
+			
+		]]>
+	</fx:Script>
+	<s:states>
+		<s:State name="State1"/>
+		<s:State name="img"/>
+	</s:states>
+	
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<s:Button label="Browse" click="browse();"  includeIn="State1"/>
+	<mx:Image includeIn="img" useHandCursor="true" buttonMode="true" click="browse();" x="0" y="0" id="imageButton"/>
+</s:Application>

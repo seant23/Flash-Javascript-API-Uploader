@@ -1,0 +1,67 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">	
+    <head>
+        <title></title>         
+        <script type="text/javascript" src="swfobject.js"></script>
+        <script type="text/javascript">
+            <!-- For version detection, set to min. required Flash Player version, or 0 (or 0.0.0), for no version detection. --> 
+            var swfVersionStr = "10.0.0";
+            <!-- To use express install, set to playerProductInstall.swf, otherwise the empty string. -->
+            var xiSwfUrlStr = "playerProductInstall.swf";
+            var flashvars = {'jsHandler':'uploader'};
+            var params = {};
+            params.quality = "high";
+            params.bgcolor = "#ffffff";
+            params.allowscriptaccess = "sameDomain";
+            params.allowfullscreen = "true";
+            var attributes = {};
+            attributes.id = "JS_Uploader";
+            attributes.name = "JS_Uploader";
+            attributes.align = "middle";
+            swfobject.embedSWF(
+                "JS_Uploader.swf", "flashContent", 
+                "71", "21", 
+                swfVersionStr, xiSwfUrlStr, 
+                flashvars, params, attributes);
+			<!-- JavaScript enabled so display the flashContent div in case it is not replaced with a swf object. -->
+			swfobject.createCSS("#flashContent", "display:block;text-align:left;");
+        </script>
+        
+        <script type="text/javascript" src="uploader.js"></script>
+        <script type="text/javascript" src="jquery.js"></script>
+        
+    </head>
+    <body>
+    	
+    	
+    	<!-- This div is where the button will go! -->
+		<div id="flashContent">
+        	<p>
+	        	To view this page ensure that Adobe Flash Player version 
+				10.0.0 or greater is installed. 
+			</p>
+			<script type="text/javascript"> 
+				var pageHost = ((document.location.protocol == "https:") ? "https://" :	"http://"); 
+				document.write("<a href='http://www.adobe.com/go/getflashplayer'><img src='" 
+								+ pageHost + "www.adobe.com/images/shared/download_buttons/get_flash_player.gif' alt='Get Adobe Flash player' /></a>" ); 
+			</script> 
+        </div>
+	   	
+	   	<div style='text-align:left'>
+		    <table border='1' width='800' id="fileTable">
+		    	<tr>
+		    		<th>X</th>
+		    		<th>File ID</th>
+		    		<th>File Name</th>
+		    		<th>File Size</th>
+		    		<th>File Status</th>
+		    		<th>File Progress</th>
+		    	</tr>
+		    </table>
+		    <br />
+		    <input type='button' id='uploadButton' value="Upload Selected >>" />
+		    <input type='button' id='textOnlyFilter' value="Add Text File Filters" />
+		    <br />
+	    </div>
+   </body>
+</html>
